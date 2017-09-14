@@ -1,1 +1,1 @@
-# Structure and Interpretation of Computer Programs Solutions
+Structure and Interpretation of Computer Programs
