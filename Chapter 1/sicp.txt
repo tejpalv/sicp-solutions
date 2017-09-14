@@ -1,0 +1,355 @@
+SICP Chapter 1
+;Solutions by Tejpal Virdi
+
+1.1)
+10
+10
+(+ 5 3 4)
+12
+(- 9 1)
+8
+(/ 6 2)
+3
+(+ (* 2 4) (- 4 6))
+6
+(define a 3)
+
+
+(define b (+ a 1))
+
+
+(+ a b (* a b))
+(+ 3 4 (* 3 4))
+= 19
+(= a b) 
+#f
+(if (and (> b a) (< b (* a b))) b a)
+4
+(cond ((= a 4) 6) ((= b 4) (+ 6 7 a)) (else 25))
+16
+(+ 2 (if (> b a) b a))
+6
+(* (cond ((> a b) a) ((< a b) b) (else -1)) (+ a 1))
+4
+1.2) Translate the following into Prefix form
+
+Pretty printing - operands are aligned vertically
+(/ (+ 5
+	4
+	(- 2
+		(- 3
+			(+ 6
+				(/ 4 3)))))
+(* 3
+(- 6 2)
+(- 2 7)))
+
+1.3) Define a procedure that takes three numbers as arguments and returns the sum of the squares of the two larger numbers.
+(define (sum-squares-larger a b c)
+	(cond ((and (<= a b) (<= a c)) (sum-square b c))
+		((and (<= b a) (<= b c)) (sum-square a c))
+		((and (<= c a) (<= c b)) (sum-square a b))
+		((and (= a b) (> a c)) (sum-square a b))))
+
+(define (sum-square a b)
+	(+ (square a) (square b)))
+(define (square a)
+	(* a a))
+		
+1.4) The if-statement is evaluated to determine the operator. If the predicate (> b 0) is true, the consequent is used (+), else the alternative (-) is used.
+1.5) If applicative-order, arguments will be evaluated first, causing (p) to result in an infinite loop. If normal-order, it should return 0 since it is never evaluating the consequent.
+
+1.6) “If” is a special form, meaning it follows a different evaluation rule than most procedures. The conditional if will evaluate the predicate first and if it is true, evaluate the consequent, otherwise evaluating the alternative. However, in a regular procedure, evaluated using applicative-order, all the arguments will be evaluated, resulting in an infinite loop.
+
+1.8) attempting to use lexical scoping
+(define (cuberoot x)
+  (define (good-enough? guess)
+    (< (abs (- (cube guess) x)) 0.01))
+  (define (cube a)
+    (* a a a))
+  (define (square a)
+    (* a a))
+  (define (improve-cube guess)
+    (/ (+ (/ x 
+             (square guess))
+          (* 2 guess))
+       3))
+  (define (cube-iter guess)
+    (if (good-enough? guess)
+        guess
+        (cube-iter (improve-cube guess))))
+  (cube-iter 1))
+
+1.9) 
+(define (+ a b) (if (= a 0) b (inc (+ (dec a) b))))
+This uses a recursive process since inc cannot be computed until a = 0. 
+Time and space: o(x)
+(define (+ a b) (if (= a 0) b (+ (dec a) (inc b))))
+This uses an iterative process because the state variables a and b are changing after every step. 
+Time: o(x) Space: o(1)
+
+1.10) 
+(define (A x y)
+  (cond ((= y 0) 0)
+        ((= x 0) (* 2 y))
+        ((= y 1) 2)
+        (else (A (- x 1)
+                 (A x (- y 1))))))
+
+(A 1 10)
+= (A 0 (A 1 9)) = (* 2 (A 1 9)) = (* 2 (A 0 (A 1 8))) … = 210
+(A 2 4)
+= (A 1 (A 2 3)) = (A 0 (A 1 (- (A 2 4) 1)) = (* 2 (A 1 (- A 2 4) 1)) = (* 2 (A 0 (A 1 (... this is getting too big
+; 2^4^2 = 216 = 65536
+(A 3 3)
+65536
+(define (f n) (A 0 n))
+f(n) = (* 2 n) = 2n
+(define (g n) (A 1 n))
+g(n) = (A 0 (A 1 (- n 1))) = (* 2 (A 0 (A 1 (- (- n 1) 1)))) … 2n
+(define (h n) (A 2 n))
+2(A 2 (- n 1))
+
+1.14) On paper
+1.16) 
+(define (expt-iter x y)
+	(fast-expt-iter x y 1))
+(define (fast-expt-iter b n a)
+	(cond ((= n 0) a)
+              ((odd? n) (fast-expt-iter b (- n 1) (* a b)))
+              (else (fast-expt-iter (* b b)  (/ n 2) a))))
+
+
+
+
+1.19) We must figure out the transformation of Tpq twice 
+The fibonacci numbers are famously modeled by:
+| 0   1 |n            =          | Fib(n-1)    Fib(n)   |
+| 1   1 |				   | Fib(n)      Fib(n+1) |
+
+This is true because if one multiplies that matrix by the column vector <b,a> we get:
+|0   1|   *   |b|         =        |  a  |
+|1   1|       |a|                  | a+b |
+The definition of fibonacci maps a ← a+b and b ← a.
+Let p = Fib(n-1) and q = Fib(n). The mapping of q ← p+q and  p ← q can be seen as:
+| p     q   |   
+| q     p+q |
+T2pq (successive squaring of the transformation) is… 
+| (p2 + q2)    (q2 + 2pq)    | 
+| (q2 + 2pq)   (q2 + (p+q)2) |
+Where p’ = Fib(n-1) = (p2 + q2) and q’ = Fib(n) = (q2 + 2pq)
+
+1.30)
+(define (sum term a next b) 
+  (define (iter a result) 
+    (if (> a b) 
+        result
+        (iter (next a) (+ result (term a)))))
+(iter a 0))
+(define (cube x) (* x x x))
+(define (inc x) (+ x 1))
+(define (dec x) (- x 1))
+(define (identity x) x)
+
+
+1.31) Part a only
+(define (product term a next b) 
+  (define (iter a result) 
+    (if (= a b) 
+        result
+        (iter (next a) (* result (term a)))))
+(iter a b))
+(define (cube x) (* x x x))
+(define (inc x) (+ x 1))
+(define (dec x) (- x 1))
+
+(define (factorial n)
+  (product * n dec 1))
+
+1.32) Part b only
+(define (accumulate combiner null-value term a next b)
+  (define (iter a result) 
+    (if (> a b) 
+        result
+        (iter (next a) (combiner result (term a)))))
+(iter a 1))
+
+(define (cube x) (* x x x))
+(define (inc x) (+ x 1))
+(define (dec x) (- x 1))
+(define (identity x) x)
+
+Recursive procedure of accumulate:
+(define (map base-case operator step a b)
+  (if (> a b)
+      base-case
+      (operator a (map base-case operator step (step a) b))))
+
+1.33)
+(define (square x) (* x x))
+(define (gcd a b)
+  (if (= (remainder a b) 0)
+      b
+      (gcd b (remainder a b))))
+(define (prime? x)
+  (prime-test x 2))
+; I only need to check until the (sqrt x) but whatever
+(define (prime-test x count)
+  (cond ((= x count) #t)
+        ((= (remainder x count) 0) #f)
+        (else (prime-test x (+ 1 count)))))
+          
+(define (map-cond test base-case operator step a b)
+  (cond ((> a b) (square b))
+        ((test a) (operator (square a) (map-cond test base-case operator step (step a) b)))
+        (else (map-cond test base-case operator step (step a) b))))
+
+(define (comp a b)
+  (map-cond prime? 0 + inc a b))
+
+
+1.34)
+Error
+Tracing it gives us: (f f) → (f 2) → (2 2)
+(2 2) cannot be evaluated since 2 is not a valid operator
+
+1.37a) Recursive process
+(define (cont-frac n d k)
+  (if (= k 1)
+      (/ n d)
+      (/ n (+ d (cont-frac n d (- k 1))))))
+
+1.38)
+(define (compute-eee n d k)
+  (cont-frac n d (- k 1) k))
+(define (cont-frac n d k s)
+  (if (= k 1)
+      (/ n d)
+      (/ n (+ (get-dee k s) (cont-frac n d (- k 1) s)))))
+
+(define (get-dee k s)
+  (if (= (remainder (+ (- s k) 1) 3) 0) 
+      (* 2 (+ (/ (- (- s k) 2) 3) 1))
+      1))
+
+1.41) 
+(define (inc x) (+ 1 x))
+(define (double func)
+  (lambda (x) (func (func x))))
+
+(((double (double double)) inc) 5) returns 21
+
+1.42)
+(define (square x) (* x x))
+(define (inc x) (+ x 1))
+
+(define (compose f g)
+  (lambda (x) (f (g x))))
+
+1.43)
+(define (compose f g)
+  (lambda (x) (f (g x))))
+
+(define (repeated func n)
+  (if (= n 2)
+      (compose func func)
+      (repeated (compose func func) (- n 1))))
+
+Simply Scheme Chapter 17
+
+17.1)
+(car '(Rod Chris Colin Hugh Paul))
+Rod
+(cadr '(Rod Chris Colin Hugh Paul))
+Chris
+(cdr '(Rod Chris Colin Hugh Paul))
+(Chris Colin Hugh Paul)
+Error not a pair
+(cons '(Rod Argent) '(Chris White))
+((Rod Argent) Chris White)
+(append '(Rod Argent) '(Chris White))
+(Rod Argent Chris White)
+(list '(Rod Argent) '(Chris White))
+((Rod Argent) (Chris White))
+(caadr '((Rod Argent) (Chris White)
+           (Colin Blunstone) (Hugh Grundy) (Paul Atkinson)))
+Chris
+(assoc 'Colin '((Rod Argent) (Chris White)
+      (Colin Blunstone) (Hugh Grundy) (Paul Atkinson)))
+
+
+Colin Blunstone
+(assoc 'Argent '((Rod Argent) (Chris White)
+       (Colin Blunstone) (Hugh Grundy) (Paul Atkinson)))
+#f
+
+17.2)
+(define (f1 a b)
+  (list (append (cdr a) (list (car b)))))
+
+(define (f2 a b)
+  (cons (cdr a) (list (cadr b))))
+
+(define (f3 a b)
+  (append a a))
+
+(define (f4 a b)
+  (list (list (car a) (car b)) (append (cdr a) (cdr b))))
+
+17.3)
+(#<procedure> #<procedure> #<procedure> #<procedure>)
+Map applies the procedure onto the list
+
+17.8) Write member
+(define (member a li)
+  (cond ((= (length li) 0) #f)
+        ((equal? a (car li)) #t)
+        (else (member a (cdr li)))))
+
+17.9) Write list-ref
+(define (list-ref li num)
+  (if (= num 1)
+      (car li)
+      (list-ref (cdr li) (- num 1))))
+
+17.10) Write length
+(define (length li)
+  (get-length li 1))
+
+(define (get-length li count)
+  (if (equal? li '())
+      (- count 1)
+      (get-length (cdr li) (+ count 1))))
+
+17.11) Write before-in-list?
+(define (before-in-list? li a b)
+  (cond ((or (< (index a li 0) 0) (< (index b li 0) 0))  #f)
+        ((< (index a li 0) (index b li 0)) #t)
+        (else #f)))
+
+(define (index a li count)
+  (cond ((equal? li '()) -1)
+        ((equal? a (car li)) count)
+        (else (index a (cdr li) (+ count 1)))))
+
+17.12) Write flatten
+(define (flatten li)
+  (cond ((equal? li '()) '()) 
+        ((not (list? li)) (list li))
+        (else (append (flatten (car li)) (flatten (cdr li))))))
+
+17.14) Write branch
+(define (branch numli li)
+  (cond ((equal? numli '()) li)
+        (else (branch (cdr numli) (list-ref li (car numli))))))
+
+(define (list-ref li num)
+  (if (= num 1)
+      (car li)
+      (list-ref (cdr li) (- num 1))))
+
+
+
+
+
+
