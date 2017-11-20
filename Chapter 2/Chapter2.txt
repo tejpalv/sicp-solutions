@@ -1,0 +1,257 @@
+2.1) modified make-rat
+(define (make-rat n d) 
+  (cond ((and (< n 0) (< d 0)) (cons (* -1 n) (* -1 d)))
+        ((< d 0) (cons (* -1 n) (* -1 d)))
+        (else (cons n d))))
+
+2.2) 
+(define (make-segment x1 y1 x2 y2)
+  (list x1 y1 x2 y2))
+
+(define (start-segment x)
+  (cons (car x) (cadr x)))
+
+(define (end-segment x)
+  (cons (caddr x) (caddr x)))
+
+(define (make-point x1 y1)
+  (cons x1 y1))
+
+(define (x-point a)
+  (car a))
+
+(define (y-point a)
+  (cdr a))
+
+(define (avg a b)
+  (/ (+ a b) 2))
+
+(define (midpoint-segment x)
+  (make-point (avg (x-point (start-segment x)) (x-point (end-segment x)))
+              (avg (y-point (start-segment x)) (y-point (end-segment x)))))
+  
+2.4) 
+> (define x 3)
+> (define y 4)
+> (car (cons x y))
+3
+(define (cdr z)
+  (z (lambda (p q) q)))
+
+2.7)
+(define (upper-bound a)
+  (cdr a))
+
+(define (lower-bound a)
+  (car a))
+
+2.8)
+(define (sub-interval x y)
+  (make-interval (- (lower-bound x) (upper-bound y))
+                 (- (lower-bound y) (upper-bound x))))
+
+2.9)
+By contradiction:
+The multiplication of the intervals [1, 2] and [3, 4] results in [3, 8]. The width of [1, 2] is 1.5, the width of [3,4] is 3.5, and the width of [3, 8] is 5.5. 
+1.5 * 3.5 =/= 5.5
+
+By contradiction:
+The division of the intervals [1, 2] and [3, 4] results in [½ , ⅔]. The width of [1, 2] is 1.5, the width of [3,4] is 3.5, and the width of [½ , ⅔] is 7/12. 
+1.5/3.5 =/= 7/12
+
+2.17) Define a procedure last-pair that returns the list that contains only the last element of a given (nonempty) list:
+
+(define (last-pair li)
+  (if (null? (cdr li))
+      (car li)
+      (last-pair (cdr li))))
+
+2.18) Define a procedure reverse that takes a list as argument and returns a list of the same elements in reverse order:
+(define (reverse li)
+  (if (null? li)
+      '()
+  (cons (last li) (reverse (but-last li)))))
+
+(define (last li)
+  (if (null? (cdr li))
+      (car li)
+      (last (cdr li))))
+
+(define (but-last li)
+  (if (null? (cdr li))
+      '()
+      (cons (car li) (but-last (cdr li)))))
+
+2.19)
+(define (cc amount coin-values)
+  (cond ((= amount 0) 1)
+        ((or (< amount 0) (no-more? coin-values)) 0)
+        (else
+         (+ (cc amount
+                (except-first-denomination coin-values))
+            (cc (- amount
+                   (first-denomination coin-values))
+                coin-values)))))
+
+(define us-coins (list 50 25 10 5 1))
+
+(define (no-more? li)
+  (null? li))
+
+(define (first-denomination li)
+  (car li))
+
+(define (except-first-denomination li)
+  (cdr li))
+
+The order of the list does not matter since the same graphical structure is being made by the procedure (every value is still being tested for).
+
+2.20)
+(define (same-parity a . b)
+  (s-help a (list a) b))
+
+(define (s-help a li b)
+  (cond ((null? b) li)
+        ((= (remainder a 2) (remainder (car b) 2)) (s-help a (list li (car b)) (cdr b)))
+        (else (s-help a li (cdr b)))))
+
+2.21)
+(define (square-list items)
+  (if (null? items)
+      '()
+      (cons (* (car items) (car items)) (square-list (cdr items)))))
+
+(define (square-list items)
+  (map (lambda (x) (* x x)) items))
+
+2.22)
+Louis Reasoner is cons’ing the car to the answer. 
+Louis Reasoner is consing a list each recursive step.
+
+2.23)
+(define (for-each procedure li)
+  (if (null? li)
+      '()
+      (cons (procedure (car li)) (for-each procedure (cdr li)))))
+
+2.24)
+(1 (2 (3 4)))
+
+2.25)
+(cdr (car (cdr (cdr '(1 3 (5 7) 9)))))
+(caar '((7)))
+(cadadr (cadadr (cadadr '(1 (2 (3 (4 (5 (6 7)))))))))
+
+2.26)
+(append x y) 
+> (1 2 3 4 5 6)
+(cons x y)
+> ((1 2 3) 4 5 6)
+(list x y)
+>((1 2 3) (4 5 6))
+
+
+2.27)
+(define (deep-reverse li)
+  (if (not (pair? (car li)))
+      (list (cadr li) (car li))
+      (list (deep-reverse (cadr li))
+            (deep-reverse (car li)))))
+
+
+
+2.29)
+Write constructors and selectors  
+(define make-mobile cons)
+(define left-branch car)
+(define right-branch cdr)
+(define make-branch cons)
+(define len car)
+(define struct cdr)
+(define weight? number?)
+(define mobile? pair?)
+(define (total-weight mobile)  (cond ((weight? mobile) mobile) (else (+ (total-weight (struct (left-branch mobile))) (total-weight (struct (right-branch mobile)))))))
+(define (total-weight mobile)  
+  (cond ((weight? mobile) mobile) 
+        (else (+ (total-weight (struct (left-branch mobile))) 
+                 (total-weight (struct (right-branch mobile)))))))
+
+
+(define (real-weight mobile)  
+  (cond ((weight? mobile) mobile) 
+        (else (+ (* (real-weight (len (left-branch mobile))) (real-weight (struct (left-branch mobile)))) 
+                 (* (real-weight (len (right-branch mobile))) (real-weight (struct (right-branch mobile)))))))) 
+
+
+(define (balanced? mobile)
+        (= (* (real-weight (len (left-branch mobile))) (real-weight (struct (left-branch mobile)))) 
+                 (* (real-weight (len (right-branch mobile))) (real-weight (struct (right-branch mobile))))))
+Changing the implementation of make-branch and make-mobile do not change the results due to the level of abstraction of the other procedures. 
+(define m
+  (make-mobile
+   (make-branch 6
+    (make-mobile
+     (make-branch 1 8)
+     (make-branch 4 2)))
+   (make-branch 5 12)))
+
+2.30)
+(define (square-tree li)
+  (cond ((null? li) '())
+        ((not (list? li)) (square li))
+        (else (cons (square-tree (car li)) 
+                    (square-tree (cdr li))))))
+
+(define (square x) (* x x))
+
+2.31)
+(define (tree-map procedure tree)
+  (cond ((null? tree) '())
+        ((not (pair? tree)) (procedure tree))
+        (else (cons (tree-map square (car tree))
+                    (tree-map square (cdr tree))))))
+
+2.32)
+(define (subsets s)
+  (if (null? s)
+      (list '())
+      (let ((rest (subsets (cdr s))))
+        (append rest (map (lambda (x) (cons (car s) x)) rest)))))
+
+'rest' takes the subsets of the cdr of the set so we must add the car to each element of rest
+
+2.33)
+(define (map p sequence)
+  (accumulate (lambda (x y) (cons (p x) y)) nil sequence))
+
+(define (append seq1 seq2)
+  (accumulate cons seq2 seq1))
+
+(define (length sequence)
+  (accumulate (lambda (x y) (+ y 1)) 0 sequence))
+
+
+  (define (accumulate op initial sequence)
+  (if (null? sequence)
+      initial
+      (op (car sequence)
+          (accumulate op initial (cdr sequence)))))
+
+(define nil '())
+
+(define (square x) (* x x))
+
+2.35)
+(define (leaf? x) (not (pair? x)))
+
+(define (count-leaves t)
+  (accumulate + 0 (map (lambda (x) (if (leaf? x) 1 (count-leaves x))) t)))
+
+(define (accumulate op initial sequence)
+  (if (null? sequence)
+      initial
+      (op (car sequence)
+          (accumulate op initial (cdr sequence)))))
+
+
+
